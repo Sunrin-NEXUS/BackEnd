@@ -14,6 +14,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Test {
+model User {
   id String @id @default(uuid())
+  email String @unique
+  password String
+}
+
+model Company {
+  name String @unique
+  subscriber int
+}
+
+model News {
+  title String
+  input_date DateTime
+  modified_date DateTime
+  reporter String
+  presummary_text String
+  summary_text String
 }
