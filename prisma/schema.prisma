@@ -32,4 +32,6 @@ model News {
   reporter String
   presummary_text String
   summary_text String
+  img_link String
+  category String
 }
