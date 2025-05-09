@@ -15,23 +15,36 @@ datasource db {
 }
 
 model User {
-  id String @id @default(uuid())
+  uuid String @id @default(uuid())
   email String @unique
   password String
+  subscribes Company[]
 }
 
 model Company {
+  uuid String @id @default(uuid())
   name String @unique
-  subscriber int
+  contents String
+  subscriber Int @default(0)
+
+  articles Article[]
+  
+  userUuid String
+  user User @relation(fields: [userUuid], references: [uuid])
 }
 
-model News {
+model Article {
+  uuid String @id @default(uuid())
+  original_url String
   title String
-  input_date DateTime
-  modified_date DateTime
-  reporter String
-  presummary_text String
-  summary_text String
-  img_link String
-  category String
-}
+  create_date DateTime
+  contents String
+  summary_img_url String?
+  img_url String?
+  video_url String?
+  media_desc String?
+  category String?
+
+  companyId String
+  company Company @relation(fields: [companyId], references: [uuid])
+}   
