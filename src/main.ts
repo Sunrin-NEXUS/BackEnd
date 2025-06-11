@@ -1,10 +1,13 @@
 import {ValidationPipe} from '@nestjs/common'
 import { NestFactory } from '@nestjs/core';
+import {NestExpressApplication} from '@nestjs/platform-express'
 import {DocumentBuilder, SwaggerModule} from '@nestjs/swagger'
 import { AppModule } from './app.module';
+import {HttpExceptionFilter} from './common/filter/httpException.filter'
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const documentConfig = new DocumentBuilder()
     .setTitle('Nexus Core Backend')
@@ -17,6 +20,10 @@ async function bootstrap() {
   })
 
   app.useGlobalPipes(new ValidationPipe())
+  app.useGlobalFilters(new HttpExceptionFilter())
+
+  app.setViewEngine('pug')
+  app.setBaseViewsDir(join(__dirname, '..', 'views'))
 
   await app.listen(process.env.PORT ?? 3000)
 }
