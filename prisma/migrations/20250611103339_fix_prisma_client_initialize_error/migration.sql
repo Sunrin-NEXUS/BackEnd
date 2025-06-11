@@ -1,11 +1,13 @@
-/*
-  Warnings:
+-- CreateTable
+CREATE TABLE `EmailVerification` (
+    `email` VARCHAR(191) NOT NULL,
+    `code` VARCHAR(191) NOT NULL,
+    `isVerified` BOOLEAN NOT NULL DEFAULT false,
+    `createAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updateAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
-  - You are about to drop the `test` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropTable
-DROP TABLE `test`;
+    PRIMARY KEY (`email`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `User` (
@@ -26,6 +28,7 @@ CREATE TABLE `Company` (
     `userUuid` VARCHAR(191) NOT NULL,
 
     UNIQUE INDEX `Company_name_key`(`name`),
+    INDEX `Company_userUuid_fkey`(`userUuid`),
     PRIMARY KEY (`uuid`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -43,6 +46,7 @@ CREATE TABLE `Article` (
     `category` VARCHAR(191) NULL,
     `companyId` VARCHAR(191) NOT NULL,
 
+    INDEX `Article_companyId_fkey`(`companyId`),
     PRIMARY KEY (`uuid`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
