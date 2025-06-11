@@ -1,3 +1,4 @@
+import {ValidationPipe} from '@nestjs/common'
 import { NestFactory } from '@nestjs/core';
 import {DocumentBuilder, SwaggerModule} from '@nestjs/swagger'
 import { AppModule } from './app.module';
@@ -15,6 +16,8 @@ async function bootstrap() {
     jsonDocumentUrl: 'swagger/json',
   })
 
-  await app.listen(process.env.PORT ?? 3000);
+  app.useGlobalPipes(new ValidationPipe())
+
+  await app.listen(process.env.PORT ?? 3000)
 }
 bootstrap();
