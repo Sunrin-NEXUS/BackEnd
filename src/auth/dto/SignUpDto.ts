@@ -1,5 +1,5 @@
 import {ApiProperty} from '@nestjs/swagger'
-import {IsEmail, IsString, IsStrongPassword} from 'class-validator'
+import {IsString} from 'class-validator'
 import {SignInDto} from './SignInDto'
 
 export class SignUpDto extends SignInDto {
