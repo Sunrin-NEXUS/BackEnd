@@ -11,12 +11,12 @@ model EmailVerification {
   email      String   @id
   code       String
   isVerified Boolean  @default(false)
-  createAt   DateTime @default(now())
   updateAt   DateTime @default(now()) @updatedAt
 }
 
 model User {
   uuid       String    @id @default(uuid())
+  id         String
   email      String    @unique
   password   String
   subscribes Company[]

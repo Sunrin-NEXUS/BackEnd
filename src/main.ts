@@ -22,8 +22,10 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe())
   app.useGlobalFilters(new HttpExceptionFilter())
 
-  app.setViewEngine('pug')
-  app.setBaseViewsDir(join(__dirname, '..', 'views'))
+  app.enableCors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  })
 
   await app.listen(process.env.PORT ?? 3000)
 }
