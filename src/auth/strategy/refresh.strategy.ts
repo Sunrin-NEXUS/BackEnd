@@ -13,7 +13,7 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req) => {
-          return req?.cookie?.refreshToken
+          return req?.cookies['refreshToken']
         }
       ]),
       secretOrKey: configService.get<string>('SECRET_REFRESH_JWT') || 'fallbackSecret',
