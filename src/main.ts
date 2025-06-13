@@ -4,6 +4,7 @@ import {NestExpressApplication} from '@nestjs/platform-express'
 import {DocumentBuilder, SwaggerModule} from '@nestjs/swagger'
 import { AppModule } from './app.module';
 import {HttpExceptionFilter} from './common/filter/httpException.filter'
+import * as cookieParser from 'cookie-parser'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -25,6 +26,8 @@ async function bootstrap() {
     origin: 'http://localhost:3000',
     credentials: true,
   })
+
+  app.use(cookieParser());
 
   await app.listen(process.env.PORT ?? 3000)
 }
