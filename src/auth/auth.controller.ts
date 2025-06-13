@@ -1,13 +1,12 @@
-import {Body, Controller, Post, HttpCode, HttpStatus, Req, Res, UseGuards, Get} from '@nestjs/common';
+import {Body, Controller, Post, HttpCode, HttpStatus, Req, Res} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config'
-import {Response as expRes, Request as expReq} from 'express'
+import {Response as expRes} from 'express'
 import { ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { AuthService } from './auth.service';
 import {EmailVerifyDto} from './dto/EmailVerifyDto'
 import {EmailVerifyRequestDto} from './dto/EmailVerifyRequestDto'
 import {SignInDto} from './dto/SignInDto'
 import {SignUpDto} from './dto/SignUpDto'
-import {RefreshGuard} from './guard/refresh.guard'
 
 @Controller('auth')
 export class AuthController {
