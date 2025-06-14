@@ -35,18 +35,18 @@ model Company {
 }
 
 model Article {
-  uuid            String   @id @default(uuid())
-  original_url    String
-  title           String
-  create_date     DateTime
-  contents        String
-  summary_img_url String?
-  img_url         String?
-  video_url       String?
-  media_desc      String?
-  category        String?
-  companyId       String
-  company         Company  @relation(fields: [companyId], references: [uuid])
+  uuid             String   @id @default(uuid())
+  category         String?
+  title            String
+  contents         Json
+  summaryTitle     String
+  summaryContents  String
+  summaryMediaUrl  String?
+  summaryMediaType String?
+  createAt         DateTime
+  companyId        String
+  company          Company  @relation(fields: [companyId], references: [uuid])
+  originalUrl      String
 
   @@index([companyId], map: "Article_companyId_fkey")
 }
