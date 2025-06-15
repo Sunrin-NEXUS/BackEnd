@@ -16,37 +16,35 @@ model EmailVerification {
 
 model User {
   uuid       String    @id @default(uuid())
-  id         String
   email      String    @unique
   password   String
-  subscribes Company[]
+  id         String
+  subscribes Company[] @relation("UserSubscriptions")
 }
 
 model Company {
-  uuid       String    @id @default(uuid())
-  name       String    @unique
-  contents   String
-  subscriber Int       @default(0)
-  userUuid   String
-  articles   Article[]
-  user       User      @relation(fields: [userUuid], references: [uuid])
-
-  @@index([userUuid], map: "Company_userUuid_fkey")
+  uuid            String    @id @default(uuid())
+  name            String    @unique
+  description     String
+  profileImageUrl String
+  articles        Article[]
+  subscribers     User[]    @relation("UserSubscriptions")
 }
 
 model Article {
   uuid             String   @id @default(uuid())
-  category         String?
   title            String
   contents         Json
-  summaryTitle     String
+  category         String?
+  companyId        String
+  createAt         DateTime
+  originalUrl      String
   summaryContents  String
   summaryMediaUrl  String?
+  summaryTitle     String
   summaryMediaType String?
-  createAt         DateTime
-  companyId        String
+  isHeadline       Boolean
   company          Company  @relation(fields: [companyId], references: [uuid])
-  originalUrl      String
 
   @@index([companyId], map: "Article_companyId_fkey")
 }
