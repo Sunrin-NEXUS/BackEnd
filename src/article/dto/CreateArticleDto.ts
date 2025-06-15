@@ -7,6 +7,7 @@ import {
   IsDate,
   IsEnum,
   IsUrl, ValidatorConstraint, ValidatorConstraintInterface,
+  IsBoolean,
 } from 'class-validator'
 import {ClassConstructor, plainToInstance, Transform, Type} from 'class-transformer'
 import {
@@ -250,9 +251,7 @@ export class CreateArticleDto {
   @Transform(({ value }) => {
     if (!Array.isArray(value)) return []
     return value.map((item) => {
-      console.log(item.type)
       const TargetClass = resolveContentType(item.type)
-      console.log(TargetClass)
       return plainToInstance(TargetClass as ClassConstructor<BaseContent>, item)
     })
   })
@@ -276,10 +275,14 @@ export class CreateArticleDto {
   createdAt: Date
 
   @ApiProperty()
+  @IsBoolean()
+  isHeadline: boolean
+
+  @ApiProperty()
   @IsString()
   companyId: string
 
-  @ApiProperty()
+  @ApiProperty({default: 'https://example.com'})
   @IsUrl()
   originalUrl: string
 }
