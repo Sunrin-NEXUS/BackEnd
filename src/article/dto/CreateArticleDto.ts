@@ -16,24 +16,7 @@ import {
   ApiExtraModels,
   getSchemaPath,
 } from '@nestjs/swagger'
-
-/**
- * Media 정의
- */
-export class MediaInterface {
-  @ApiProperty({ enum: ['video', 'image'] })
-  @IsEnum(['video', 'image'])
-  mediaType: 'video' | 'image'
-
-  @ApiProperty()
-  @IsString()
-  url: string
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  description?: string
-}
+import { MediaDto } from 'src/common/dto/mediaDto'
 
 /**
  * BaseContent – 모든 콘텐츠 타입이 공통으로 가지는 필드
@@ -181,10 +164,10 @@ export class SummaryDto {
   @IsString()
   contents: string
 
-  @ApiProperty({ type: MediaInterface })
+  @ApiProperty({ type: MediaDto })
   @ValidateNested()
-  @Type(() => MediaInterface)
-  media: MediaInterface
+  @Type(() => MediaDto)
+  media: MediaDto
 }
 
 function resolveContentType(type: string) {

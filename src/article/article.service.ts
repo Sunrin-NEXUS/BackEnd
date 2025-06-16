@@ -1,7 +1,9 @@
-import {Injectable, BadRequestException} from '@nestjs/common'
+import {Injectable, BadRequestException, Query} from '@nestjs/common'
 import {PrismaService} from '../prisma/prisma.service'
 import {CreateArticleDto} from './dto/CreateArticleDto'
 import {instanceToPlain} from 'class-transformer'
+import { PaginationDto } from '../common/dto/pagination.dto'
+import { PaginatedArticleResponseDto } from './dto/ArticleResponseDto'
 
 @Injectable()
 export class ArticleService {
@@ -44,12 +46,46 @@ export class ArticleService {
     })
   }
 
-  async findArticleByCategory(category: string) {
-    return await this.prismaService.article.findMany({
-      where: {
-        category,
-      }
-    })
+  async findArticleByCategory(
+    category: string,
+    pagination: PaginationDto
+  ): Promise<PaginatedArticleResponseDto> {
+    const { page = 1, limit = 10 } = pagination;
+    
+    const [items, total] = await Promise.all([
+      this.prismaService.article.findMany({
+        where: {
+          category,
+        },
+        take: limit,
+        skip: (page - 1) * limit,
+        orderBy: {
+          createAt: 'desc'
+        }
+      }),
+      this.prismaService.article.count({
+        where: {
+          category,
+        }
+      })
+    ]);
+
+    return {
+      items: items.map(v => ({
+        ...v,
+        contents: v.summaryContents,
+        ...(v.summaryMediaUrl && v.summaryMediaType && {
+          media: {
+            mediaType: v.summaryMediaType,
+            url: v.summaryMediaUrl,
+          }
+        })
+      })),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    };
   }
 
   async getCategories() {

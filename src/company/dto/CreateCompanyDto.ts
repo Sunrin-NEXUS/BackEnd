@@ -10,7 +10,7 @@ export class CreateCompanyDto {
   @IsString()
   description: string
 
-  @ApiProperty()
+  @ApiProperty({default: 'https://example.com'})
   @IsUrl()
   profileImageUrl: string
 }
