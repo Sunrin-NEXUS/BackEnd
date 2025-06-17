@@ -12,7 +12,7 @@ import {SignUpDto} from './dto/SignUpDto'
 export class AuthController {
   constructor(
     private readonly configService: ConfigService,
-    private authService: AuthService,
+    private readonly authService: AuthService,
   ) {}
 
   @ApiOperation({summary: '이메일 인증 요청'})

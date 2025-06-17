@@ -13,7 +13,7 @@ export class AccessStrategy extends PassportStrategy(Strategy, 'access') {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req) => {
-          return req?.cookie?.accessToken
+          return req?.cookies?.accessToken
         }
       ]),
       secretOrKey: configService.get<string>('SECRET_ACCESS_JWT') || 'fallbackSecret'

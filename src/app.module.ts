@@ -8,6 +8,7 @@ import {ArticleModule} from './article/article.module'
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module'
 import {CompanyModule} from './company/company.module'
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import {CompanyModule} from './company/company.module'
     PrismaModule,
     AuthModule,
     ArticleModule,
+    UserModule,
     CompanyModule,
   ],
   controllers: [AppController],
