@@ -1,17 +1,17 @@
 import {
   Body,
   Param,
-  Query,
   Controller,
   Post,
-  Get,
+  Get, Query,
 } from '@nestjs/common'
 import {ApiOperation, ApiResponse, ApiQuery, ApiTags, ApiParam} from '@nestjs/swagger'
 import {ArticleService} from './article.service'
 import {CreateArticleDto} from './dto/CreateArticleDto'
 import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { Pagination } from 'src/common/decorators/pagination.decorator';
-import { ArticleResponseDto, PaginatedArticleResponseDto } from './dto/ArticleResponseDto';
+import { ArticleResponseSummaryDto, PaginatedArticleResponseSummaryDto } from './dto/ArticleResponseSummaryDto';
+import {ArticleResponseDto} from './dto/ArticleResponseDto';
+import {GetArticlesQueryDto} from './dto/GetArticlesQueryDto'
 
 @ApiTags('Article')
 @Controller('article')
@@ -27,7 +27,7 @@ export class ArticleController {
   @ApiResponse({
     status: 201,
     description: '뉴스 생성 성공',
-    type: ArticleResponseDto
+    type: ArticleResponseSummaryDto
   })
   @Post()
   async createArticle(@Body() createArticleDto: CreateArticleDto) {
@@ -60,18 +60,54 @@ export class ArticleController {
   @ApiResponse({
     status: 200,
     description: '조회 성공',
-    type: PaginatedArticleResponseDto
+    type: PaginatedArticleResponseSummaryDto
   })
   @ApiQuery({
     name: 'limit',
     required: false,
     example: 10
   })
-  @Get(':category')
+  @Get('category/:category')
   async findArticleByCategory(
     @Param('category') category: string,
-    @Pagination() pagination: PaginationDto
+    @Query() pagination: PaginationDto
   ){
     return await this.articleService.findArticleByCategory(category, pagination)
+  }
+
+  @ApiOperation({
+    summary: '뉴스 상세 조회',
+    description: '아이디를 기준으로 상세 뉴스를 조회합니다'
+  })
+  @ApiParam({
+    name: 'uuid',
+    description: '조회할 뉴스 uuid',
+    example: '7f41e977-f00d-40fb-a99f-388176c36bbf'
+  })
+  @ApiResponse({
+    status: 200,
+    description: '조회 성공',
+    type: ArticleResponseDto
+  })
+  @Get(':uuid')
+  async getArticle(@Param('uuid') uuid: string): Promise<ArticleResponseDto> {
+    return this.articleService.findArticleById(uuid)
+  }
+
+  @ApiOperation({
+    summary: '뉴스 조회',
+    description: '뉴스를 조회합니다.'
+  })
+  @ApiResponse({
+    status: 200,
+    description: '조회 성공',
+    type: PaginatedArticleResponseSummaryDto
+  })
+  @Get()
+  async getArticles(
+    @Query() articlesQuery: GetArticlesQueryDto,
+    @Query() pagination: PaginationDto,
+  ): Promise<PaginatedArticleResponseSummaryDto> {
+    return await this.articleService.getArticles(articlesQuery, pagination)
   }
 }

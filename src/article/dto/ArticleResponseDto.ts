@@ -1,19 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { JsonValue } from '@prisma/client/runtime/library';
-
-export class MediaDto {
-  @ApiProperty({
-    description: '미디어 타입',
-    example: 'image'
-  })
-  mediaType: string;
-
-  @ApiProperty({
-    description: '미디어 URL',
-    example: 'https://example.com/image.jpg'
-  })
-  url: string;
-}
+import {ApiProperty} from '@nestjs/swagger'
+import {
+  Subject,
+  Description,
+  List,
+  Link,
+  Scroll,
+  MediaContent
+} from './CreateArticleDto'
 
 export class ArticleResponseDto {
   @ApiProperty({
@@ -30,16 +23,16 @@ export class ArticleResponseDto {
 
   @ApiProperty({
     description: '뉴스 내용',
-    example: '뉴스 상세 내용...'
+    example: '[{type: "subject", content: "뉴스 내용"}]'
   })
-  contents: string;
-
-  @ApiProperty({
-    description: '뉴스 카테고리',
-    example: 'politics',
-    nullable: true
-  })
-  category: string | null;
+  contents: Array<
+    | Subject
+    | Description
+    | List
+    | Link
+    | Scroll
+    | MediaContent
+  >
 
   @ApiProperty({
     description: '생성일',
@@ -48,41 +41,8 @@ export class ArticleResponseDto {
   createAt: Date;
 
   @ApiProperty({
-    description: '미디어 정보',
-    type: MediaDto,
-    required: false
+    default: 'https://example.com',
+    example: 'https://example.com',
   })
-  media?: MediaDto;
+  originalUrl: string
 }
-
-export class PaginatedArticleResponseDto {
-  @ApiProperty({
-    description: '뉴스 목록',
-    type: [ArticleResponseDto]
-  })
-  items: ArticleResponseDto[];
-
-  @ApiProperty({
-    description: '전체 뉴스 개수',
-    example: 100
-  })
-  total: number;
-
-  @ApiProperty({
-    description: '현재 페이지',
-    example: 1
-  })
-  page: number;
-
-  @ApiProperty({
-    description: '페이지당 항목 수',
-    example: 10
-  })
-  limit: number;
-
-  @ApiProperty({
-    description: '전체 페이지 수',
-    example: 10
-  })
-  totalPages: number;
-} 
