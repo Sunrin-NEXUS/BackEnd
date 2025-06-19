@@ -1,6 +1,7 @@
 import {BadRequestException, Injectable} from '@nestjs/common'
 import {Company} from '@prisma/client'
 import {PrismaService} from '../prisma/prisma.service'
+import {CompanySubscriberCountResponseDto} from './dto/CompanySubscriberCountResponseDto'
 import {CreateCompanyDto} from './dto/CreateCompanyDto'
 
 @Injectable()
@@ -33,7 +34,7 @@ export class CompanyService {
     return company
   }
 
-  async getCompanySubscriberCount(name: string): Promise<{subscriberCount: number}> {
+  async getCompanySubscriberCount(name: string): Promise<CompanySubscriberCountResponseDto> {
     const company = await this.prismaService.company.findUnique({
       where: {name},
       include: {
@@ -49,20 +50,5 @@ export class CompanyService {
     }
 
     return { subscriberCount: company._count.subscribers };
-  }
-
-  async getCompanyPublicInfo(name: string): Promise<Pick<Company, 'name' | 'description' | 'profileImageUrl'>> {
-    const company = await this.prismaService.company.findUnique({
-      where: {name},
-      select: {
-        name: true,
-        description: true,
-        profileImageUrl: true
-      }
-    })
-    if(!company) {
-      throw new BadRequestException({message: 'Company does Not exist'})
-    }
-    return company
   }
 }

@@ -59,13 +59,13 @@ export class AuthController {
 
     res.cookie('accessToken', accessToken,{
       httpOnly: true,
-      secure: this.configService.get<boolean>('IS_PRODUCTION'),
+      secure: this.configService.get<boolean>('SSL'),
       sameSite: 'lax',
       maxAge: 60 * 60 * 1000,
     })
     res.cookie('refreshToken', refreshToken,{
       httpOnly: true,
-      secure: this.configService.get<boolean>('IS_PRODUCTION'),
+      secure: this.configService.get<boolean>('SSL'),
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
