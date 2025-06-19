@@ -1,9 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ChangeEmailDto } from "./dto/ChangeEmailDto";
 import { PrismaService } from '../prisma/prisma.service';
 import { BadRequestException } from "@nestjs/common";
 import { UserResponseDto } from "./dto/UserResponseDto";
-
+import { ChangePasswordDto } from "./dto/ChangePasswordDto";
+import * as bcrypt from 'bcrypt'
+import { User } from "@prisma/client";
 
 @Injectable()
 export class UserService {
@@ -35,4 +37,33 @@ export class UserService {
           email: res.email
         }
     }
+
+  async changePassord(
+    {originalPassword, newPassword}: ChangePasswordDto,
+    user: User
+  ): Promise<UserResponseDto>{
+    console.log(user)
+    const isCorrectPassword = await bcrypt.compare(originalPassword, user.password)
+    if(!isCorrectPassword)
+      throw new UnauthorizedException({message: "Password is Not Correct"})
+    if(originalPassword === newPassword)
+      throw new BadRequestException({message: "New password Must Not same as Orginal password"})
+
+    
+    const salt = await bcrypt.genSalt(12)
+    const hashedPassword = await bcrypt.hash(newPassword, salt)
+
+    const newUser = await this.prismaService.user.update({
+      where: {uuid: user.uuid},
+      data: {
+        password: hashedPassword
+      }
+    })
+
+    return {
+      uuid: newUser.uuid,
+      id: newUser.id,
+      email: newUser.email,
+    }
+  }
 }
