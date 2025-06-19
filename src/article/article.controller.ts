@@ -13,6 +13,7 @@ import { ArticleSummaryResponseDto, PaginatedArticleResponseSummaryDto } from '.
 import {ArticleResponseDto} from './dto/ArticleResponseDto';
 import {GetArticlesQueryDto} from './dto/GetArticlesQueryDto'
 import { ArticleAllCategoryResponseDto } from './dto/ArticleAllCategoryResponseDto';
+import { ArticleSearchResponseDto } from './dto/ArticleSearchResponseDto';
 
 @ApiTags('Article')
 @Controller('article')
@@ -33,6 +34,22 @@ export class ArticleController {
   @Post()
   async createArticle(@Body() createArticleDto: CreateArticleDto) {
     return await this.articleService.createArticle(createArticleDto)
+  }
+
+  @ApiOperation({
+    summary: '뉴스 검색',
+    description: '검색어를 포함하는 뉴스 제목을 검색합니다.'
+  })
+  @ApiResponse({
+    status: 200,
+    description: '검색 성공',
+    type: ArticleSearchResponseDto
+  })
+  @Get('/search')
+  async searchArticle(
+    @Query('search') search: string
+  ): Promise<ArticleSearchResponseDto> {
+    return this.articleService.searchArticle(search)
   }
 
   @ApiOperation({
@@ -59,7 +76,7 @@ export class ArticleController {
     type: ArticleAllCategoryResponseDto
   })
   @Get('category/all')
-  async findArticleByCategory(){
+  async findArticleByCategory(): Promise<ArticleAllCategoryResponseDto>{
     return await this.articleService.getArticleAllCategory()
   }
 

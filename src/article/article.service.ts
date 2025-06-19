@@ -16,6 +16,8 @@ import {
 import {GetArticlesQueryDto} from './dto/GetArticlesQueryDto'
 import {ArticleToArticleSummaryResponseDto} from './util/ArticleToArticleSummaryResponseDto'
 import { NotificationService } from 'src/notification/notification.service'
+import { ArticleAllCategoryResponseDto } from './dto/ArticleAllCategoryResponseDto'
+import { ArticleSearchResponseDto } from './dto/ArticleSearchResponseDto'
 
 @Injectable()
 export class ArticleService {
@@ -68,25 +70,25 @@ export class ArticleService {
 
   async getArticleAllCategory() {
     const categories = await this.getCategories()
-    const res: Array<ArticleSummaryResponseDto | undefined> = await Promise.all(
-      categories.map(async(v) => {
+    const articles = await Promise.all(
+      categories.map(async (v) => {
         const article = await this.prismaService.article.findFirst({
           where: {
             category: v,
             isHeadline: true,
           },
           take: 1,
-          orderBy: {createAt: 'desc'},
-          include: {company: true}
-        })
-        if(article) {
+          orderBy: { createAt: 'desc' },
+          include: { company: true },
+        });
+        if (article) {
           return {
             uuid: article.uuid,
             title: article.title,
             contents: article.summaryContents,
             category: article.category,
             createAt: article.createAt,
-            isHeadline: article.isHeadline,
+            isHeadline: true,
             company: {
               profileImageUrl: article.company.profileImageUrl,
               name: article.company.name,
@@ -95,14 +97,17 @@ export class ArticleService {
               media: {
                 mediaType: article.summaryMediaType,
                 url: article.summaryMediaUrl,
-              }
-            })
-          }
+              },
+            }),
+          };
         }
+        return undefined;
       })
-    )
-
-    return res.filter(v => v !== undefined)
+    );
+    const res: ArticleAllCategoryResponseDto = {
+      items: articles.filter((v) => v !== undefined),
+    };
+    return res;
   }
 
   async getCategories(): Promise<Array<string>> {
@@ -193,5 +198,28 @@ export class ArticleService {
     } catch (error) {
       throw new InternalServerErrorException({message: error})
     }
+  }
+
+  async searchArticle(search: string): Promise<ArticleSearchResponseDto> {
+    const articles = await this.prismaService.article.findMany({
+      where: {
+        title: {contains: search,},
+      },
+      orderBy: { createAt: 'desc' },
+    });
+
+    return {
+      items: articles.map((article) => ({
+        uuid: article.uuid,
+        title: article.title,
+        contents: article.summaryContents,
+        ...(article.summaryMediaType && article.summaryMediaUrl && {
+          media: {
+            mediaType: article.summaryMediaType,
+            url: article.summaryMediaUrl,
+          }
+        })
+      })),
+    };
   }
 }

@@ -8,5 +8,5 @@ export class ArticleSummaryResponseDtoWithHeadline extends ArticleSummaryRespons
 
 export class ArticleAllCategoryResponseDto {
   @ApiProperty({ type: [ArticleSummaryResponseDtoWithHeadline] })
-  data: ArticleSummaryResponseDtoWithHeadline[];
+  items: ArticleSummaryResponseDtoWithHeadline[];
 }
