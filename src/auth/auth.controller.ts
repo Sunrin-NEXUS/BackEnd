@@ -1,12 +1,13 @@
-import {Body, Controller, Post, HttpCode, HttpStatus, Req, Res} from '@nestjs/common';
+import {Body, Controller, Post, HttpCode, HttpStatus, Req, Res, UseGuards, Get} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config'
-import {Response as expRes} from 'express'
+import {Response as expRes, Request as expReq} from 'express'
 import { ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { AuthService } from './auth.service';
 import {EmailVerifyDto} from './dto/EmailVerifyDto'
 import {EmailVerifyRequestDto} from './dto/EmailVerifyRequestDto'
 import {SignInDto} from './dto/SignInDto'
 import {SignUpDto} from './dto/SignUpDto'
+import {RefreshGuard} from './guard/refresh.guard'
 
 @Controller('auth')
 export class AuthController {
@@ -74,6 +75,29 @@ export class AuthController {
       status: 'success',
       message: 'Successfully signed in',
       data: {accessToken, refreshToken},
+    }
+  }
+
+  @UseGuards(RefreshGuard)
+  @Get('/refresh')
+  async refresh(
+    @Req() req: expReq,
+    @Res({passthrough: true}) res: expRes
+  ) {
+    const refreshToken = req?.cookies['refreshToken'] as string
+    const accessToken = await this.authService.refresh(refreshToken)
+
+    res.cookie('accessToken', accessToken,{
+      httpOnly: true,
+      secure: this.configService.get<boolean>('SSL'),
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 1000,
+    })
+
+    return {
+      status: 'success',
+      message: 'Successfully refreshed',
+      data: {accessToken},
     }
   }
 }
