@@ -7,6 +7,7 @@ import { AccessGuard } from "src/auth/guard/access.guard";
 import { ChangePasswordDto } from "./dto/ChangePasswordDto";
 import { Request as expReq } from "express";
 import { User } from '@prisma/client';
+import { SubscribeCompanyDto } from "./dto/SubscribeCompanyDto";
 
 @Controller('user')
 export class UserController {
@@ -39,5 +40,39 @@ export class UserController {
             throw new InternalServerErrorException('Can Not Find User')
 
         return await this.userService.changePassord(changePasswordDto, user as User)
+    }
+
+    @UseGuards(AccessGuard)
+    @ApiOperation({summary: '구독'})
+    @ApiResponse({status: 201, description: '구독 성공'})
+    @HttpCode(HttpStatus.CREATED)
+    @Patch('subscribe')
+    async subscribe(
+        @Body() subscribeDto: SubscribeCompanyDto,
+        @Request() req: expReq
+    ): Promise<{message: string}> {
+        const user = req?.user;
+        if(!user)
+            throw new InternalServerErrorException('Can Not Find User')
+
+        const company = await this.userService.getCompanyByNameOrThrow(subscribeDto.companyName);
+        return await this.userService.subscribe(user as User, company);
+    }
+
+    @UseGuards(AccessGuard)
+    @ApiOperation({summary: '구독 해제'})
+    @ApiResponse({status: 201, description: '구독 해제 성공'})
+    @HttpCode(HttpStatus.CREATED)
+    @Patch('unsubscribe')
+    async unsubscribeCompany(
+        @Body() unsubscribeDto: SubscribeCompanyDto,
+        @Request() req: expReq
+    ): Promise<{message: string}> {
+        const user = req?.user
+        if (!user)
+            throw new InternalServerErrorException("Can Not Find User")
+
+        const company = await this.userService.getCompanyByNameOrThrow(unsubscribeDto.companyName)
+        return await this.userService.unsubscribe(user as User, company)
     }
 }

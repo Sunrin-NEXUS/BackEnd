@@ -5,7 +5,7 @@ import { BadRequestException } from "@nestjs/common";
 import { UserResponseDto } from "./dto/UserResponseDto";
 import { ChangePasswordDto } from "./dto/ChangePasswordDto";
 import * as bcrypt from 'bcrypt'
-import { User } from "@prisma/client";
+import { Company, User } from "@prisma/client";
 
 @Injectable()
 export class UserService {
@@ -65,5 +65,68 @@ export class UserService {
       id: newUser.id,
       email: newUser.email,
     }
+  }   
+
+  async subscribe(user: User, company: Company) {
+    const founduser = await this.prismaService.user.findUnique({
+      where: {uuid: user.uuid},
+      include: {subscribes: true},
+    })
+
+    const isAlreadySubscribed = founduser?.subscribes.some(
+      (subscribedCompany) => subscribedCompany.uuid === company.uuid
+    )
+
+    if(isAlreadySubscribed){
+      throw new BadRequestException({message: 'This Company is Already Subscribed'})
+    }
+    
+    await this.prismaService.user.update({
+      where: {uuid: user.uuid},
+      data: {
+        subscribes: {
+          connect: {uuid: company.uuid},
+        },
+      },
+    })
+
+    return {message: 'Subscribe is Completed'}
+  }
+
+  async getCompanyByNameOrThrow(companyName: string): Promise<Company> {
+    const company = await this.prismaService.company.findUnique({
+      where: {name: companyName},
+    })
+
+    if(!company) {
+      throw new BadRequestException({message: 'The Company is not existed'})
+    }
+
+    return company;
+  }
+
+  async unsubscribe(user: User, company: Company):Promise<{message: string}> {
+    const founduser = await this.prismaService.user.findUnique({
+      where: {uuid: user.uuid},
+      include: {subscribes: true},
+    })
+
+    const isSubscribed = founduser?.subscribes.some(
+      (subscribedCompany) => subscribedCompany.uuid === company.uuid
+    )
+
+    if(!isSubscribed) {
+      throw new BadRequestException({message: 'You Must Subscribe'})
+    }
+
+    await this.prismaService.user.update({
+      where: {uuid: user.uuid},
+      data: {
+        subscribes: {
+          disconnect: {uuid: company.uuid}
+        }
+      }
+    })
+    return {message: 'Successfully Canceled Subscribe'}
   }
 }
