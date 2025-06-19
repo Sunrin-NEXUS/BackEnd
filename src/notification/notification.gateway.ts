@@ -11,7 +11,13 @@ import { Socket, Server } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway(
+  process.env.PORT ? Number(process.env.PORT)+1 : 3001,
+  {
+    namespace: 'notification',
+    cors: {origin: ['http://localhost:3000', 'http://localhost:3001']}
+  }
+)
 export class NotificationGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -35,13 +41,5 @@ export class NotificationGateway
 
   handleDisconnect(client: Socket) {
     this.notificationService.handleSocketDisconnect(client);
-  }
-
-  @SubscribeMessage('read-notification')
-  async handleReadNotification(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: { notificationId: number },
-  ) {
-    await this.notificationService.markAsRead(data.notificationId);
   }
 }

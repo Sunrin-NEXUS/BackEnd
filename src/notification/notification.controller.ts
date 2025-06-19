@@ -13,7 +13,7 @@ export class NotificationController {
     return await this.notificationService.getUserNotifications(user.uuid);
   }
 
-  @Patch(':id/read')
+  @Patch(':id')
   async markAsRead(@Param('id') id: number) {
     return await this.notificationService.markAsRead(id);
   }

@@ -15,11 +15,13 @@ import {
 } from './dto/CreateArticleDto'
 import {GetArticlesQueryDto} from './dto/GetArticlesQueryDto'
 import {ArticleToArticleSummaryResponseDto} from './util/ArticleToArticleSummaryResponseDto'
+import { NotificationService } from 'src/notification/notification.service'
 
 @Injectable()
 export class ArticleService {
   constructor(
-    private readonly prismaService: PrismaService
+    private readonly prismaService: PrismaService,
+    private readonly notificationService: NotificationService
   ) {}
 
   async createArticle(
@@ -40,7 +42,7 @@ export class ArticleService {
 
     const plainContents = instanceToPlain(contents)
 
-    return await this.prismaService.article.create({
+    const res = await this.prismaService.article.create({
       data: {
         category,
         title,
@@ -55,6 +57,13 @@ export class ArticleService {
         originalUrl,
       }
     })
+
+    this.notificationService.notifyUsersOfNewArticle({
+      articleUuid: res.uuid,
+      companyUuid: companyId,
+    })
+
+    return res
   }
 
   async findArticleByCategory(

@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module'
 import {CompanyModule} from './company/company.module'
 import { UserModule } from './user/user.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { UserModule } from './user/user.module';
     ArticleModule,
     UserModule,
     CompanyModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

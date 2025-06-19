@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { Socket, Server } from 'socket.io';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class NotificationService {
@@ -11,6 +12,7 @@ export class NotificationService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   setServer(server: Server) {
@@ -18,28 +20,44 @@ export class NotificationService {
   }
 
   async handleSocketConnection(client: Socket) {
-    const accessToken = client.handshake.auth?.token;
+    const accessToken = client.handshake.query?.token as string;
     if (!accessToken) {
-      client.disconnect();
+      client.emit('error', {message: 'no token provided'})
+      setTimeout(() => {
+        client.disconnect();
+      }, 500)
       return;
     }
 
     try {
-      const payload = this.jwtService.verify(accessToken);
+      const payload = this.jwtService.verify(accessToken, {
+        secret: this.configService.get<string>('SECRET_ACCESS_JWT') ?? 'fallback'
+      })
+
+      const userUuid = payload?.sub
+      if(!userUuid)
+        throw new Error('no uuid in token')
+
       const user = await this.prisma.user.findUnique({
-        where: { uuid: payload.uuid },
+        where: { uuid: userUuid },
         include: { subscribes: true },
       });
 
       if (!user) {
-        client.disconnect();
+        client.emit('error', {message: 'User Not Found'})
+        setTimeout(() => {
+          client.disconnect();
+        }, 500)
         return;
       }
 
       client.join(user.uuid);
       this.logger.log(`User ${user.uuid} joined room`);
     } catch (err) {
-      client.disconnect();
+        client.emit('error', {message: 'Invaild token'})
+        setTimeout(() => {
+          client.disconnect();
+        }, 500)
     }
   }
 
@@ -48,30 +66,42 @@ export class NotificationService {
   }
 
   async markAsRead(notificationId: number) {
-    await this.prisma.notification.update({
-      where: { id: notificationId },
-      data: { isRead: true },
-    });
+    if(Number.isNaN(notificationId))
+      throw new Error('id must be a number')
+    notificationId = Number(notificationId)
+    try {
+      await this.prisma.notification.update({
+        where: { id: notificationId },
+        data: { isRead: true },
+      })
+    } catch(e) {
+      this.logger.error(e)
+    }
+
+    return 'success'
   }
 
   async notifyUsersOfNewArticle({
     articleUuid,
-    companyId,
-    companyName,
-    articleTitle,
+    companyUuid,
   }: {
     articleUuid: string;
-    companyId: string;
-    companyName: string;
-    articleTitle: string;
+    companyUuid: string;
   }) {
     const users = await this.prisma.user.findMany({
       where: {
         subscribes: {
-          some: { uuid: companyId },
+          some: { uuid: companyUuid },
         },
       },
-    });
+    })
+
+    const company = await this.prisma.company.findUnique({
+      where: {uuid: companyUuid}
+    })
+    const article = await this.prisma.article.findUnique({
+      where: {uuid: articleUuid}
+    })
 
     for (const user of users) {
       const notification = await this.prisma.notification.create({
@@ -85,9 +115,16 @@ export class NotificationService {
       this.server.to(user.uuid).emit('new-notification', {
         notificationId: notification.id,
         articleUuid,
-        companyName,
-        articleTitle,
+        title: article?.summaryTitle ?? article?.title,
+        contents: article?.summaryContents,
+        companyProfileImageUrl: company?.profileImageUrl,
         createdAt: notification.createdAt,
+        ...(article?.summaryMediaUrl && article.summaryMediaType && {
+          media: {
+            type: article?.summaryMediaType,
+            url: article?.summaryMediaUrl
+          },
+        })
       });
     }
   }
@@ -104,6 +141,5 @@ export class NotificationService {
             }
         }
     });
-}
-
+  }
 }
