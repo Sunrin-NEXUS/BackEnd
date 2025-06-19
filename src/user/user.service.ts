@@ -1,16 +1,19 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {CompanyService} from '../company/company.service'
 import { ChangeEmailDto } from "./dto/ChangeEmailDto";
 import { PrismaService } from '../prisma/prisma.service';
 import { BadRequestException } from "@nestjs/common";
+import {SubscribeCompanyDto} from './dto/SubscribeCompanyDto'
 import { UserResponseDto } from "./dto/UserResponseDto";
 import { ChangePasswordDto } from "./dto/ChangePasswordDto";
 import * as bcrypt from 'bcrypt'
-import { Company, User } from "@prisma/client";
+import { User } from "@prisma/client";
 
 @Injectable()
 export class UserService {
     constructor(
-        private readonly prismaService: PrismaService
+      private readonly prismaService: PrismaService,
+      private readonly companyService: CompanyService
     ) {}
 
     async changeEmail({originalEmail, newEmail}: ChangeEmailDto): Promise<UserResponseDto>{
@@ -67,25 +70,31 @@ export class UserService {
     }
   }   
 
-  async subscribe(user: User, company: Company) {
-    const founduser = await this.prismaService.user.findUnique({
-      where: {uuid: user.uuid},
+  async subscribe(userUuid: string, {companyName}: SubscribeCompanyDto) {
+    const user = await this.prismaService.user.findUnique({
+      where: {uuid: userUuid},
       include: {subscribes: true},
     })
 
-    const isAlreadySubscribed = founduser?.subscribes.some(
-      (subscribedCompany) => subscribedCompany.uuid === company.uuid
+    if(!user)
+      throw new UnauthorizedException({message: "User does not exist"})
+
+    // company 가져오는건 companyService의 책임임
+    const {uuid: companyUuid} = await this.companyService.getCompanyByName(companyName)
+
+    const isAlreadySubscribed = user.subscribes.some(
+      (subscribedCompany) =>
+        subscribedCompany.uuid === companyUuid
     )
 
-    if(isAlreadySubscribed){
-      throw new BadRequestException({message: 'This Company is Already Subscribed'})
-    }
-    
+    if(isAlreadySubscribed)
+      throw new BadRequestException({message: 'Already Subscribed'})
+
     await this.prismaService.user.update({
       where: {uuid: user.uuid},
       data: {
         subscribes: {
-          connect: {uuid: company.uuid},
+          connect: {uuid: companyUuid},
         },
       },
     })
@@ -93,37 +102,30 @@ export class UserService {
     return {message: 'Subscribe is Completed'}
   }
 
-  async getCompanyByNameOrThrow(companyName: string): Promise<Company> {
-    const company = await this.prismaService.company.findUnique({
-      where: {name: companyName},
-    })
-
-    if(!company) {
-      throw new BadRequestException({message: 'The Company is not existed'})
-    }
-
-    return company;
-  }
-
-  async unsubscribe(user: User, company: Company):Promise<{message: string}> {
-    const founduser = await this.prismaService.user.findUnique({
-      where: {uuid: user.uuid},
+  async unsubscribe(userUuid: string, {companyName}: SubscribeCompanyDto):Promise<{message: string}> {
+    const user = await this.prismaService.user.findUnique({
+      where: {uuid: userUuid},
       include: {subscribes: true},
     })
 
-    const isSubscribed = founduser?.subscribes.some(
-      (subscribedCompany) => subscribedCompany.uuid === company.uuid
+    if(!user)
+      throw new UnauthorizedException({message: "User does not exist"})
+
+    const {uuid: companyUuid} = await this.companyService.getCompanyByName(companyName)
+
+    const isSubscribed = user?.subscribes.some(
+      (subscribedCompany) =>
+        subscribedCompany.uuid === companyUuid
     )
 
-    if(!isSubscribed) {
+    if(!isSubscribed)
       throw new BadRequestException({message: 'You Must Subscribe'})
-    }
 
     await this.prismaService.user.update({
       where: {uuid: user.uuid},
       data: {
         subscribes: {
-          disconnect: {uuid: company.uuid}
+          disconnect: {uuid: companyUuid}
         }
       }
     })

@@ -51,12 +51,11 @@ export class UserController {
         @Body() subscribeDto: SubscribeCompanyDto,
         @Request() req: expReq
     ): Promise<{message: string}> {
-        const user = req?.user;
-        if(!user)
-            throw new InternalServerErrorException('Can Not Find User')
-
-        const company = await this.userService.getCompanyByNameOrThrow(subscribeDto.companyName);
-        return await this.userService.subscribe(user as User, company);
+        // 언론사 가져오는 작업은 Controller의 책임이 아니라 생각함
+        return await this.userService.subscribe(
+          (req?.user as User).uuid,
+          subscribeDto
+        );
     }
 
     @UseGuards(AccessGuard)
@@ -65,14 +64,12 @@ export class UserController {
     @HttpCode(HttpStatus.CREATED)
     @Patch('unsubscribe')
     async unsubscribeCompany(
-        @Body() unsubscribeDto: SubscribeCompanyDto,
+        @Body() subscribeCompanyDto: SubscribeCompanyDto,
         @Request() req: expReq
     ): Promise<{message: string}> {
-        const user = req?.user
-        if (!user)
-            throw new InternalServerErrorException("Can Not Find User")
-
-        const company = await this.userService.getCompanyByNameOrThrow(unsubscribeDto.companyName)
-        return await this.userService.unsubscribe(user as User, company)
+        return await this.userService.unsubscribe(
+          (req?.user as User).uuid,
+          subscribeCompanyDto
+        )
     }
 }

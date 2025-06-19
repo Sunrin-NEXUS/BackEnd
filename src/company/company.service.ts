@@ -1,4 +1,5 @@
-import {Injectable} from '@nestjs/common'
+import {BadRequestException, Injectable} from '@nestjs/common'
+import {Company} from '@prisma/client'
 import {PrismaService} from '../prisma/prisma.service'
 import {CreateCompanyDto} from './dto/CreateCompanyDto'
 
@@ -20,5 +21,15 @@ export class CompanyService {
         profileImageUrl,
       }
     })
+  }
+
+  async getCompanyByName(name: string): Promise<Company> {
+    const company = await this.prismaService.company.findFirst({
+      where: {name}
+    })
+    if(!company)
+      throw new BadRequestException({message: "Company does not exist"})
+
+    return company
   }
 }
