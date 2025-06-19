@@ -32,4 +32,37 @@ export class CompanyService {
 
     return company
   }
+
+  async getCompanySubscriberCount(name: string): Promise<{subscriberCount: number}> {
+    const company = await this.prismaService.company.findUnique({
+      where: {name},
+      include: {
+        _count: {
+          select: {
+            subscribers: true
+          }
+        }
+      }
+    })
+    if(!company) {
+      throw new BadRequestException({message: 'Company does Not exist'})
+    }
+
+    return { subscriberCount: company._count.subscribers };
+  }
+
+  async getCompanyPublicInfo(name: string): Promise<Pick<Company, 'name' | 'description' | 'profileImageUrl'>> {
+    const company = await this.prismaService.company.findUnique({
+      where: {name},
+      select: {
+        name: true,
+        description: true,
+        profileImageUrl: true
+      }
+    })
+    if(!company) {
+      throw new BadRequestException({message: 'Company does Not exist'})
+    }
+    return company
+  }
 }
