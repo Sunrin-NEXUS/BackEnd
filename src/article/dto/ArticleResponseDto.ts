@@ -1,4 +1,5 @@
 import {ApiProperty} from '@nestjs/swagger'
+import {CompanySummaryResponseDto} from '../../company/dto/CompanySummaryResponseDto'
 import {
   Subject,
   Description,
@@ -44,5 +45,11 @@ export class ArticleResponseDto {
     default: 'https://example.com',
     example: 'https://example.com',
   })
-  originalUrl: string
+  originalUrl: string;
+
+  @ApiProperty({
+    description: '언론사',
+    type: CompanySummaryResponseDto,
+  })
+  company: CompanySummaryResponseDto;
 }

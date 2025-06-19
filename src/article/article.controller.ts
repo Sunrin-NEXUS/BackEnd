@@ -9,7 +9,7 @@ import {ApiOperation, ApiResponse, ApiQuery, ApiTags, ApiParam} from '@nestjs/sw
 import {ArticleService} from './article.service'
 import {CreateArticleDto} from './dto/CreateArticleDto'
 import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { ArticleResponseSummaryDto, PaginatedArticleResponseSummaryDto } from './dto/ArticleResponseSummaryDto';
+import { ArticleSummaryResponseDto, PaginatedArticleResponseSummaryDto } from './dto/ArticleSummaryResponseDto';
 import {ArticleResponseDto} from './dto/ArticleResponseDto';
 import {GetArticlesQueryDto} from './dto/GetArticlesQueryDto'
 
@@ -27,7 +27,7 @@ export class ArticleController {
   @ApiResponse({
     status: 201,
     description: '뉴스 생성 성공',
-    type: ArticleResponseSummaryDto
+    type: ArticleSummaryResponseDto
   })
   @Post()
   async createArticle(@Body() createArticleDto: CreateArticleDto) {
