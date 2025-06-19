@@ -131,4 +131,19 @@ export class UserService {
     })
     return {message: 'Successfully Canceled Subscribe'}
   }
+
+  async deleteAccount(user: User): Promise<{message: string}> {
+    const foundUser = await this.prismaService.user.findUnique({
+      where: {uuid: user.uuid}
+    })
+
+    if(!foundUser) {
+      throw new BadRequestException({message: 'This user does Not existed'})
+    }
+
+    await this.prismaService.user.delete({
+      where: {uuid: user.uuid}
+    })
+    return {message: 'Successfully Deleted Account'}
+  }
 }

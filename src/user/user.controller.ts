@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, InternalServerErrorException, Patch, Request, UseGuards } from "@nestjs/common";
+import { Body, Controller, HttpCode, HttpStatus, InternalServerErrorException, Patch, Request, UseGuards, Delete } from "@nestjs/common";
 import { UserService } from './user.service';
 import { ChangeEmailDto } from './dto/ChangeEmailDto';
 import { ApiOperation, ApiResponse } from "@nestjs/swagger";
@@ -71,5 +71,18 @@ export class UserController {
           (req?.user as User).uuid,
           subscribeCompanyDto
         )
+    }
+
+    @UseGuards(AccessGuard)
+    @ApiOperation({summary: '계정 삭제'})
+    @ApiResponse({status: 201, description: '계정 삭제 성공'})
+    @HttpCode(HttpStatus.CREATED)
+    @Delete('delete')
+    async deleteAccount(@Request() req: expReq): Promise<{message: string}> {
+        const user = req?.user
+        if (!user)
+            throw new InternalServerErrorException('Can Not Find User')
+
+        return await this.userService.deleteAccount(user as User)
     }
 }
