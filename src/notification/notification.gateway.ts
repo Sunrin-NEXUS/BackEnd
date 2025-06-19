@@ -1,8 +1,5 @@
 import {
   WebSocketGateway,
-  SubscribeMessage,
-  MessageBody,
-  ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
@@ -31,15 +28,15 @@ export class NotificationGateway
 
   afterInit(server: Server) {
     this.server = server;
-    this.notificationService.setServer(server);
-    this.logger.log('WebSocket initialized');
+    this.notificationService.setServer(server)
+    this.logger.log('WebSocket initialized')
   }
 
   async handleConnection(client: Socket) {
-    await this.notificationService.handleSocketConnection(client);
+    await this.notificationService.handleSocketConnection(client)
   }
 
   handleDisconnect(client: Socket) {
-    this.notificationService.handleSocketDisconnect(client);
+    this.notificationService.handleSocketDisconnect(client)
   }
 }
