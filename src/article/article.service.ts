@@ -2,7 +2,7 @@ import {Injectable, BadRequestException, InternalServerErrorException} from '@ne
 import {PrismaService} from '../prisma/prisma.service'
 import {instanceToPlain} from 'class-transformer'
 import { PaginationDto } from '../common/dto/pagination.dto'
-import { PaginatedArticleResponseSummaryDto } from './dto/ArticleResponseSummaryDto'
+import { PaginatedArticleResponseSummaryDto } from './dto/ArticleSummaryResponseDto'
 import {ArticleResponseDto} from './dto/ArticleResponseDto'
 import {
   Subject,
@@ -14,6 +14,7 @@ import {
   CreateArticleDto
 } from './dto/CreateArticleDto'
 import {GetArticlesQueryDto} from './dto/GetArticlesQueryDto'
+import {ArticleToArticleSummaryResponseDto} from './util/ArticleToArticleSummaryResponseDto'
 
 @Injectable()
 export class ArticleService {
@@ -58,10 +59,16 @@ export class ArticleService {
 
   async findArticleByCategory(
     category: string,
-    pagination: PaginationDto
+    {page, limit}: PaginationDto
   ): Promise<PaginatedArticleResponseSummaryDto> {
-    const { page = 1, limit = 10 } = pagination;
-    
+    if(Number.isNaN(page))
+      throw new BadRequestException({message: 'page number must be a number'})
+    if(Number.isNaN(limit))
+      throw new BadRequestException({message: 'limit must be a number'})
+
+    page = Number(page)
+    limit = Number(limit)
+
     const [items, total] = await Promise.all([
       this.prismaService.article.findMany({
         where: {
@@ -69,9 +76,8 @@ export class ArticleService {
         },
         take: limit,
         skip: (page - 1) * limit,
-        orderBy: {
-          createAt: 'desc'
-        }
+        orderBy: {createAt: 'desc'},
+        include: {company: true}
       }),
       this.prismaService.article.count({
         where: {
@@ -81,20 +87,7 @@ export class ArticleService {
     ]);
 
     return {
-      items: items.map(v => ({
-        uuid: v.uuid,
-        title: v.title,
-        contents: v.summaryContents,
-        category: v.category,
-        createAt: v.createAt,
-        ...(v.summaryMediaUrl && v.summaryMediaType && {
-          media: {
-            mediaType: v.summaryMediaType,
-            url: v.summaryMediaUrl,
-          }
-        }),
-        isHeadline: v.isHeadline,
-      })),
+      items: items.map(v => ArticleToArticleSummaryResponseDto(v)),
       total,
       page,
       limit,
@@ -113,7 +106,10 @@ export class ArticleService {
   }
 
   async findArticleById(uuid: string): Promise<ArticleResponseDto> {
-    const article = await this.prismaService.article.findUnique({where: {uuid}})
+    const article = await this.prismaService.article.findUnique({
+      where: {uuid},
+      include: {company: true}
+    })
 
     if(!article)
       throw new BadRequestException({message: 'article not found'})
@@ -134,6 +130,10 @@ export class ArticleService {
       contents: contents as unknown as (Subject | Description | List | Link | Scroll | MediaContent)[],
       createAt: article.createAt,
       originalUrl: article.originalUrl,
+      company: {
+        profileImageUrl: article.company.profileImageUrl,
+        name: article.company.name,
+      }
     }
   }
 
@@ -145,43 +145,42 @@ export class ArticleService {
     {type, category}: GetArticlesQueryDto,
     {page=1, limit=10}: PaginationDto,
   ): Promise<PaginatedArticleResponseSummaryDto> {
-    const [items, total] = await Promise.all([
-      this.prismaService.article.findMany({
-        where: {
-          ...(type && {isHeadline: type === 'headline'}),
-          ...(category && {category: category}),
-        },
-        take: limit,
-        skip: (page - 1) * limit,
-        orderBy: {createAt: 'desc'}
-      }),
-      this.prismaService.article.count({
-        where: {
-          ...(type && {isHeadline: type === 'headline'}),
-          ...(category && {category: category}),
-        },
-      })
-    ])
+    if(Number.isNaN(page))
+      throw new BadRequestException({message: 'page number must be a number'})
+    if(Number.isNaN(limit))
+      throw new BadRequestException({message: 'limit must be a number'})
 
-    return {
-      items: items.map(v => ({
-        uuid: v.uuid,
-        title: v.title,
-        contents: v.summaryContents,
-        category: v.category,
-        createAt: v.createAt,
-        ...(v.summaryMediaUrl && v.summaryMediaType && {
-          media: {
-            mediaType: v.summaryMediaType,
-            url: v.summaryMediaUrl,
-          }
+    page = Number(page)
+    limit = Number(limit)
+    try {
+      const [items, total] = await Promise.all([
+        this.prismaService.article.findMany({
+          where: {
+            ...(type && {isHeadline: type === 'headline'}),
+            ...(category && {category: category}),
+          },
+          take: limit,
+          skip: (page - 1) * limit,
+          orderBy: {createAt: 'desc'},
+          include: {company: true}
         }),
-        isHeadline: v.isHeadline,
-      })),
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit)
-    };
+        this.prismaService.article.count({
+          where: {
+            ...(type && {isHeadline: type === 'headline'}),
+            ...(category && {category: category}),
+          },
+        })
+      ])
+
+      return {
+        items: items.map(v => ArticleToArticleSummaryResponseDto(v)),
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      };
+    } catch (error) {
+      throw new InternalServerErrorException({message: error})
+    }
   }
 }

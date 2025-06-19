@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import {CompanySummaryResponseDto} from '../../company/dto/CompanySummaryResponseDto'
 
 export class MediaDto {
   @ApiProperty({
@@ -14,7 +15,7 @@ export class MediaDto {
   url: string;
 }
 
-export class ArticleResponseSummaryDto {
+export class ArticleSummaryResponseDto {
   @ApiProperty({
     description: '뉴스 ID',
     example: '123e4567-e89b-12d3-a456-426614174000'
@@ -49,7 +50,6 @@ export class ArticleResponseSummaryDto {
   @ApiProperty({
     description: '미디어 정보',
     type: MediaDto,
-    required: false
   })
   media?: MediaDto;
 
@@ -59,14 +59,20 @@ export class ArticleResponseSummaryDto {
     type: Boolean,
   })
   isHeadline?: boolean;
+
+  @ApiProperty({
+    description: '언론사',
+    type: CompanySummaryResponseDto,
+  })
+  company: CompanySummaryResponseDto;
 }
 
 export class PaginatedArticleResponseSummaryDto {
   @ApiProperty({
     description: '뉴스 목록',
-    type: [ArticleResponseSummaryDto]
+    type: [ArticleSummaryResponseDto]
   })
-  items: ArticleResponseSummaryDto[];
+  items: ArticleSummaryResponseDto[];
 
   @ApiProperty({
     description: '전체 뉴스 개수',
