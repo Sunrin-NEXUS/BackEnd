@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, InternalServerErrorException, Patch, Request, UseGuards, Delete } from "@nestjs/common";
+import { Body, Controller, HttpCode, HttpStatus, InternalServerErrorException, Patch, Request, UseGuards, Delete, Get } from "@nestjs/common";
 import { UserService } from './user.service';
 import { ChangeEmailDto } from './dto/ChangeEmailDto';
 import { ApiOperation, ApiResponse } from "@nestjs/swagger";
@@ -84,5 +84,17 @@ export class UserController {
             throw new InternalServerErrorException('Can Not Find User')
 
         return await this.userService.deleteAccount(user as User)
+    }
+
+    @UseGuards(AccessGuard)
+    @ApiOperation({summary: '구독한 언론사 목록 조회'})
+    @ApiResponse({status: 201, description: '구독한 언론사 목록 조회 성공'})
+    @Get('subscribe/list')
+    async getSubscribedCompanies(@Request() req: expReq) {
+        const user = req.user
+        if (!user)
+            throw new InternalServerErrorException('Can Not Find User')
+        
+        return await this.userService.getSubscribedCompanies(user as User)
     }
 }

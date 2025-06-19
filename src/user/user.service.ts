@@ -146,4 +146,25 @@ export class UserService {
     })
     return {message: 'Successfully Deleted Account'}
   }
+
+  async getSubscribedCompanies(user: User) {
+    const foundUser = await this.prismaService.user.findUnique({
+      where: {uuid : user.uuid},
+      include: {
+        subscribes: {
+          select: {
+            name: true,
+            description: true,
+            profileImageUrl: true
+          }
+        }
+      }
+    })
+
+    if(!foundUser) {
+      throw new BadRequestException({message: 'This user does Not existed'})
+    }
+
+    return foundUser.subscribes;
+  }
 }
