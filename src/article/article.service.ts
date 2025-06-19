@@ -2,7 +2,7 @@ import {Injectable, BadRequestException, InternalServerErrorException} from '@ne
 import {PrismaService} from '../prisma/prisma.service'
 import {instanceToPlain} from 'class-transformer'
 import { PaginationDto } from '../common/dto/pagination.dto'
-import { PaginatedArticleResponseSummaryDto } from './dto/ArticleSummaryResponseDto'
+import { ArticleSummaryResponseDto, PaginatedArticleResponseSummaryDto } from './dto/ArticleSummaryResponseDto'
 import {ArticleResponseDto} from './dto/ArticleResponseDto'
 import {
   Subject,
@@ -66,42 +66,43 @@ export class ArticleService {
     return res
   }
 
-  async findArticleByCategory(
-    category: string,
-    {page, limit}: PaginationDto
-  ): Promise<PaginatedArticleResponseSummaryDto> {
-    if(Number.isNaN(page))
-      throw new BadRequestException({message: 'page number must be a number'})
-    if(Number.isNaN(limit))
-      throw new BadRequestException({message: 'limit must be a number'})
-
-    page = Number(page)
-    limit = Number(limit)
-
-    const [items, total] = await Promise.all([
-      this.prismaService.article.findMany({
-        where: {
-          category,
-        },
-        take: limit,
-        skip: (page - 1) * limit,
-        orderBy: {createAt: 'desc'},
-        include: {company: true}
-      }),
-      this.prismaService.article.count({
-        where: {
-          category,
+  async getArticleAllCategory() {
+    const categories = await this.getCategories()
+    const res: Array<ArticleSummaryResponseDto | undefined> = await Promise.all(
+      categories.map(async(v) => {
+        const article = await this.prismaService.article.findFirst({
+          where: {
+            category: v,
+            isHeadline: true,
+          },
+          take: 1,
+          orderBy: {createAt: 'desc'},
+          include: {company: true}
+        })
+        if(article) {
+          return {
+            uuid: article.uuid,
+            title: article.title,
+            contents: article.summaryContents,
+            category: article.category,
+            createAt: article.createAt,
+            isHeadline: article.isHeadline,
+            company: {
+              profileImageUrl: article.company.profileImageUrl,
+              name: article.company.name,
+            },
+            ...(article.summaryMediaUrl && article.summaryMediaType && {
+              media: {
+                mediaType: article.summaryMediaType,
+                url: article.summaryMediaUrl,
+              }
+            })
+          }
         }
       })
-    ]);
+    )
 
-    return {
-      items: items.map(v => ArticleToArticleSummaryResponseDto(v)),
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit)
-    };
+    return res.filter(v => v !== undefined)
   }
 
   async getCategories(): Promise<Array<string>> {
@@ -151,7 +152,7 @@ export class ArticleService {
   }
 
   async getArticles(
-    {type, category}: GetArticlesQueryDto,
+    {type, category, companies}: GetArticlesQueryDto,
     {page=1, limit=10}: PaginationDto,
   ): Promise<PaginatedArticleResponseSummaryDto> {
     if(Number.isNaN(page))
@@ -162,22 +163,23 @@ export class ArticleService {
     page = Number(page)
     limit = Number(limit)
     try {
+      const where: any = {
+        ...(type && {isHeadline: type === 'headline'}),
+        ...(category && {category: category}),
+      };
+      if (companies && Array.isArray(companies) && companies.length > 0) {
+        where.companyId = { in: companies };
+      }
       const [items, total] = await Promise.all([
         this.prismaService.article.findMany({
-          where: {
-            ...(type && {isHeadline: type === 'headline'}),
-            ...(category && {category: category}),
-          },
+          where,
           take: limit,
           skip: (page - 1) * limit,
           orderBy: {createAt: 'desc'},
           include: {company: true}
         }),
         this.prismaService.article.count({
-          where: {
-            ...(type && {isHeadline: type === 'headline'}),
-            ...(category && {category: category}),
-          },
+          where,
         })
       ])
 

@@ -1,5 +1,5 @@
-import { ApiPropertyOptional } from '@nestjs/swagger'
-import { IsIn, IsOptional, IsString } from 'class-validator'
+import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger'
+import { IsIn, IsOptional, IsString, IsArray } from 'class-validator'
 
 export class GetArticlesQueryDto {
   @ApiPropertyOptional({
@@ -19,4 +19,14 @@ export class GetArticlesQueryDto {
   @IsOptional()
   @IsString()
   category?: string
+
+  @ApiPropertyOptional({
+    description: '조회할 회사명 배열',
+    type: [String],
+    example: ['sbs', 'mbc'],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  companies?: Array<string>
 }

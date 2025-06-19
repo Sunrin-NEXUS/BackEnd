@@ -5,13 +5,14 @@ import {
   Post,
   Get, Query,
 } from '@nestjs/common'
-import {ApiOperation, ApiResponse, ApiQuery, ApiTags, ApiParam} from '@nestjs/swagger'
+import {ApiOperation, ApiResponse, ApiTags, ApiParam} from '@nestjs/swagger'
 import {ArticleService} from './article.service'
 import {CreateArticleDto} from './dto/CreateArticleDto'
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { ArticleSummaryResponseDto, PaginatedArticleResponseSummaryDto } from './dto/ArticleSummaryResponseDto';
 import {ArticleResponseDto} from './dto/ArticleResponseDto';
 import {GetArticlesQueryDto} from './dto/GetArticlesQueryDto'
+import { ArticleAllCategoryResponseDto } from './dto/ArticleAllCategoryResponseDto';
 
 @ApiTags('Article')
 @Controller('article')
@@ -49,30 +50,17 @@ export class ArticleController {
   }
 
   @ApiOperation({
-    summary: '지정 카테고리인 뉴스 조회',
-    description: '특정 카테고리의 뉴스를 페이지네이션과 함께 조회합니다.'
-  })
-  @ApiParam({
-    name: 'category',
-    description: '조회할 뉴스 카테고리',
-    example: 'politics'
+    summary: '모든 카테고리에 대해 제일 최신 헤드라인 조회',
+    description: '모든 카테고리에 대해 제일 최신 헤드라인을 조회합니다.'
   })
   @ApiResponse({
     status: 200,
     description: '조회 성공',
-    type: PaginatedArticleResponseSummaryDto
+    type: ArticleAllCategoryResponseDto
   })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    example: 10
-  })
-  @Get('category/:category')
-  async findArticleByCategory(
-    @Param('category') category: string,
-    @Query() pagination: PaginationDto
-  ){
-    return await this.articleService.findArticleByCategory(category, pagination)
+  @Get('category/all')
+  async findArticleByCategory(){
+    return await this.articleService.getArticleAllCategory()
   }
 
   @ApiOperation({
