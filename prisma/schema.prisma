@@ -20,6 +20,7 @@ model User {
   password   String
   id         String
   subscribes Company[] @relation("UserSubscriptions")
+  notifications    Notification[]
 }
 
 model Company {
@@ -45,6 +46,17 @@ model Article {
   summaryMediaType String?
   isHeadline       Boolean
   company          Company  @relation(fields: [companyId], references: [uuid])
+  notifications    Notification[]
 
   @@index([companyId], map: "Article_companyId_fkey")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [uuid])
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [uuid])
+  createdAt DateTime @default(now())
+  isRead    Boolean  @default(false)
 }
