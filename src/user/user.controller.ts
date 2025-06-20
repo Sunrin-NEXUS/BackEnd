@@ -7,7 +7,7 @@ import { AccessGuard } from "src/auth/guard/access.guard";
 import { ChangePasswordDto } from "./dto/ChangePasswordDto";
 import { Request as expReq } from "express";
 import { User } from '@prisma/client';
-import { SubscribeCompanyDto } from "./dto/SubscribeCompanyDto";
+import { SubscribeCompanyDto } from './dto/SubscribeCompanyDto';
 
 @Controller('user')
 export class UserController {
@@ -17,7 +17,7 @@ export class UserController {
 
     @UseGuards(AccessGuard)
     @ApiOperation({summary: '이메일 변경'})
-    @ApiResponse({status: 201, description: '이메일 변경 성공'})
+    @ApiResponse({status: 201, description: '이메일 변경 성공', type: ChangeEmailDto})
     @HttpCode(HttpStatus.CREATED)
     @Patch('change/email')
     async changeEmail(
@@ -28,7 +28,7 @@ export class UserController {
 
     @UseGuards(AccessGuard)
     @ApiOperation({summary: '비밀번호 변경'})
-    @ApiResponse({status: 201, description: '비밀번호 변경 성공'})
+    @ApiResponse({status: 201, description: '비밀번호 변경 성공', type: ChangePasswordDto})
     @HttpCode(HttpStatus.CREATED)
     @Patch('change/password')
     async changePassword(
@@ -44,7 +44,7 @@ export class UserController {
 
     @UseGuards(AccessGuard)
     @ApiOperation({summary: '구독'})
-    @ApiResponse({status: 201, description: '구독 성공'})
+    @ApiResponse({status: 201, description: '구독 성공', type: SubscribeCompanyDto})
     @HttpCode(HttpStatus.CREATED)
     @Patch('subscribe')
     async subscribe(
@@ -60,7 +60,7 @@ export class UserController {
 
     @UseGuards(AccessGuard)
     @ApiOperation({summary: '구독 해제'})
-    @ApiResponse({status: 201, description: '구독 해제 성공'})
+    @ApiResponse({status: 201, description: '구독 해제 성공', type: SubscribeCompanyDto})
     @HttpCode(HttpStatus.CREATED)
     @Patch('unsubscribe')
     async unsubscribeCompany(
@@ -75,7 +75,7 @@ export class UserController {
 
     @UseGuards(AccessGuard)
     @ApiOperation({summary: '계정 삭제'})
-    @ApiResponse({status: 201, description: '계정 삭제 성공'})
+    @ApiResponse({status: 201, description: '계정 삭제 성공', type: String})
     @HttpCode(HttpStatus.CREATED)
     @Delete('delete')
     async deleteAccount(@Request() req: expReq): Promise<{message: string}> {
