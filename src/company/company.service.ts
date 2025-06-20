@@ -3,6 +3,7 @@ import {Company} from '@prisma/client'
 import {PrismaService} from '../prisma/prisma.service'
 import {CompanySubscriberCountResponseDto} from './dto/CompanySubscriberCountResponseDto'
 import {CreateCompanyDto} from './dto/CreateCompanyDto'
+import { CompanyResponseDto } from './dto/CompanyResponseDto'
 
 @Injectable()
 export class CompanyService {
