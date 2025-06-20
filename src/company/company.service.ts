@@ -3,7 +3,7 @@ import {Company} from '@prisma/client'
 import {PrismaService} from '../prisma/prisma.service'
 import {CompanySubscriberCountResponseDto} from './dto/CompanySubscriberCountResponseDto'
 import {CreateCompanyDto} from './dto/CreateCompanyDto'
-import { ArticleToArticleSummaryResponseDto } from '../article/util/ArticleToArticleSummaryResponseDto'
+import { CompanyResponseDto } from './dto/CompanyResponseDto'
 
 @Injectable()
 export class CompanyService {
@@ -23,6 +23,18 @@ export class CompanyService {
         profileImageUrl,
       }
     })
+  }
+
+  async getCompanyInfoByName(name: string): Promise<CompanyResponseDto> {
+    const company = await this.getCompanyByName(name)
+    const subscriberCnt = await this.getCompanySubscriberCount(name)
+    return {
+      uuid: company.uuid,
+      name: company.name,
+      profileImageUrl: company.profileImageUrl,
+      description: company.description,
+      subscribers: subscriberCnt.subscriberCount,
+    }
   }
 
   async getCompanyByName(name: string): Promise<Company> {
