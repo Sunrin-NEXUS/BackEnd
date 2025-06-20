@@ -15,12 +15,12 @@ model EmailVerification {
 }
 
 model User {
-  uuid       String    @id @default(uuid())
-  email      String    @unique
-  password   String
-  id         String
-  subscribes Company[] @relation("UserSubscriptions")
-  notifications    Notification[]
+  uuid          String         @id @default(uuid())
+  email         String         @unique
+  password      String
+  id            String
+  subscribes    Company[]      @relation("UserSubscriptions")
+  notifications Notification[]
 }
 
 model Company {
@@ -33,7 +33,7 @@ model Company {
 }
 
 model Article {
-  uuid             String   @id @default(uuid())
+  uuid             String         @id @default(uuid())
   title            String
   contents         Json
   category         String?
@@ -45,7 +45,7 @@ model Article {
   summaryTitle     String
   summaryMediaType String?
   isHeadline       Boolean
-  company          Company  @relation(fields: [companyId], references: [uuid])
+  company          Company        @relation(fields: [companyId], references: [uuid])
   notifications    Notification[]
 
   @@index([companyId], map: "Article_companyId_fkey")
@@ -59,4 +59,19 @@ model Notification {
   article   Article  @relation(fields: [articleId], references: [uuid])
   createdAt DateTime @default(now())
   isRead    Boolean  @default(false)
+}
+
+model RawArticle {
+  id                   String   @id @default(uuid()) @db.Char(36)
+  title                String
+  contents             String
+  original_article_url String   @map("original_article_url")
+  summary_img_url      String?  @map("summary_img_url") @db.Text
+  img_url              String?  @map("img_url") @db.Text
+  img_desc             String?  @map("img_desc") @db.Text
+  video_url            String?  @map("video_url") @db.Text
+  category             String?  @db.Text
+  create_date          DateTime @map("create_date")
+
+  @@map("raw_article")
 }
