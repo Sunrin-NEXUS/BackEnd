@@ -3,12 +3,11 @@ import {ConfigService} from '@nestjs/config'
 import {Response as expRes, Request as expReq} from 'express'
 import { ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { AuthService } from './auth.service';
-import {EmailVerifyDto} from './dto/EmailVerifyDto'
-import {EmailVerifyRequestDto} from './dto/EmailVerifyRequestDto'
+import { EmailVerifyDto } from './dto/EmailVerifyDto';
+import { EmailVerifyRequestDto } from './dto/EmailVerifyRequestDto';
 import {SignInDto} from './dto/SignInDto'
 import {SignUpDto} from './dto/SignUpDto'
 import {RefreshGuard} from './guard/refresh.guard'
-
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -17,7 +16,7 @@ export class AuthController {
   ) {}
 
   @ApiOperation({summary: '이메일 인증 요청'})
-  @ApiResponse({status: 200, description: '이메일 인증 요청 성공'})
+  @ApiResponse({status: 200, description: '이메일 인증 요청 성공', type: EmailVerifyRequestDto})
   @HttpCode(HttpStatus.OK)
   @Post('/email/verify/request')
   async emailVerifyRequest(@Body() emailRequestDto: EmailVerifyRequestDto) {
@@ -25,7 +24,7 @@ export class AuthController {
   }
 
   @ApiOperation({summary: '이메일 인증'})
-  @ApiResponse({status: 200, description: '이메일 인증 성공'})
+  @ApiResponse({status: 200, description: '이메일 인증 성공', type: EmailVerifyDto})
   @HttpCode(HttpStatus.OK)
   @Post('/email/verify')
   async emailVerify(
@@ -38,7 +37,7 @@ export class AuthController {
   }
 
   @ApiOperation({summary: '회원가입'})
-  @ApiResponse({status: 201, description: '회원가입 성공'})
+  @ApiResponse({status: 201, description: '회원가입 성공', type: SignUpDto})
   @HttpCode(HttpStatus.CREATED)
   @Post('/sign/up')
   async signUp(@Body() signUpDto: SignUpDto) {
@@ -46,7 +45,7 @@ export class AuthController {
   }
 
   @ApiOperation({summary: '로그인'})
-  @ApiResponse({status: 200, description: '로그인 성공'})
+  @ApiResponse({status: 200, description: '로그인 성공', type: SignInDto})
   @HttpCode(HttpStatus.OK)
   @Post('/sign/in')
   async signIn(
