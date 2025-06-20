@@ -1,4 +1,16 @@
-import { Body, Controller, HttpCode, HttpStatus, InternalServerErrorException, Patch, Request, UseGuards, Delete, Get } from "@nestjs/common";
+import {
+    Body,
+    Controller,
+    HttpCode,
+    HttpStatus,
+    InternalServerErrorException,
+    Patch,
+    Request,
+    UseGuards,
+    Delete,
+    Get,
+    Req, NotFoundException
+} from "@nestjs/common";
 import {SubscribedCompaniesResponseDto} from './dto/SubscribedCompaniesResponseDto'
 import { UserService } from './user.service';
 import { ChangeEmailDto } from './dto/ChangeEmailDto';
@@ -15,6 +27,18 @@ export class UserController {
     constructor(
         private readonly userService: UserService
     ) {}
+
+    @UseGuards(AccessGuard)
+    @ApiOperation({summary: '이메일 조회'})
+    @ApiResponse({status: 200, description: '조회 성공', type: String})
+    @HttpCode(HttpStatus.OK)
+    @Patch('my/email')
+    async myEmail(@Req() req: expReq): Promise<string> {
+        const user = req?.user
+        if(!user)
+            throw new NotFoundException('user does not exist')
+        return (user as User).email
+    }
 
     @UseGuards(AccessGuard)
     @ApiOperation({summary: '이메일 변경'})
