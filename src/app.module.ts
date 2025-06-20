@@ -10,11 +10,16 @@ import { PrismaModule } from './prisma/prisma.module'
 import {CompanyModule} from './company/company.module'
 import { UserModule } from './user/user.module';
 import { NotificationModule } from './notification/notification.module';
+import {ServeStaticModule} from '@nestjs/serve-static'
+import {join} from 'path'
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
     }),
     MailerModule.forRootAsync({
       imports: [ConfigModule],
