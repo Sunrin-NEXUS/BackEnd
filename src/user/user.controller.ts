@@ -32,7 +32,7 @@ export class UserController {
     @ApiOperation({summary: '이메일 조회'})
     @ApiResponse({status: 200, description: '조회 성공', type: String})
     @HttpCode(HttpStatus.OK)
-    @Patch('my/email')
+    @Get('my/email')
     async myEmail(@Req() req: expReq): Promise<string> {
         const user = req?.user
         if(!user)
