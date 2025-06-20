@@ -1,4 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, InternalServerErrorException, Patch, Request, UseGuards, Delete, Get } from "@nestjs/common";
+import {SubscribedCompaniesResponseDto} from './dto/SubscribedCompaniesResponseDto'
 import { UserService } from './user.service';
 import { ChangeEmailDto } from './dto/ChangeEmailDto';
 import { ApiOperation, ApiResponse } from "@nestjs/swagger";
@@ -88,7 +89,7 @@ export class UserController {
 
     @UseGuards(AccessGuard)
     @ApiOperation({summary: '구독한 언론사 목록 조회'})
-    @ApiResponse({status: 201, description: '구독한 언론사 목록 조회 성공'})
+    @ApiResponse({status: 201, description: '구독한 언론사 목록 조회 성공', type: SubscribedCompaniesResponseDto})
     @Get('subscribe/list')
     async getSubscribedCompanies(@Request() req: expReq) {
         const user = req.user

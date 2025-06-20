@@ -4,6 +4,7 @@ import { ChangeEmailDto } from "./dto/ChangeEmailDto";
 import { PrismaService } from '../prisma/prisma.service';
 import { BadRequestException } from "@nestjs/common";
 import {SubscribeCompanyDto} from './dto/SubscribeCompanyDto'
+import {SubscribedCompaniesResponseDto} from './dto/SubscribedCompaniesResponseDto'
 import { UserResponseDto } from "./dto/UserResponseDto";
 import { ChangePasswordDto } from "./dto/ChangePasswordDto";
 import * as bcrypt from 'bcrypt'
@@ -147,12 +148,13 @@ export class UserService {
     return {message: 'Successfully Deleted Account'}
   }
 
-  async getSubscribedCompanies(user: User) {
+  async getSubscribedCompanies(user: User): Promise<SubscribedCompaniesResponseDto> {
     const foundUser = await this.prismaService.user.findUnique({
       where: {uuid : user.uuid},
       include: {
         subscribes: {
           select: {
+            uuid: true,
             name: true,
             description: true,
             profileImageUrl: true
@@ -165,6 +167,13 @@ export class UserService {
       throw new BadRequestException({message: 'This user does Not existed'})
     }
 
-    return foundUser.subscribes;
+    return {
+      items: foundUser.subscribes.map(v => ({
+        uuid: v.uuid,
+        name: v.name,
+        description: v.description,
+        profileImageUrl: v.profileImageUrl,
+      }))
+    }
   }
 }

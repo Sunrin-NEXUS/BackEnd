@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { Socket, Server } from 'socket.io';
 import { ConfigService } from '@nestjs/config';
+import {NotificationResponseDto} from './dto/NotificationResponseDto'
 
 @Injectable()
 export class NotificationService {
@@ -129,17 +130,34 @@ export class NotificationService {
     }
   }
   
-  async getUserNotifications(userId: string) {
-    return this.prisma.notification.findMany({
-        where: { userId },
-        orderBy: { createdAt: 'desc' },
-        include: {
-            article: {
-                include: {
-                    company: true
-                }
-            }
-        }
-    });
+  async getUserNotifications(userId: string): Promise<NotificationResponseDto> {
+    const res = await this.prisma.notification.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+          article: {
+              include: {
+                  company: true
+              }
+          }
+      }
+    })
+    return {
+      items: res.map(v => ({
+        title: v.article.title,
+        contents: v.article.summaryContents,
+        company: {
+          uuid: v.article.company.uuid,
+          name: v.article.company.name,
+          profileImageUrl: v.article.company.profileImageUrl,
+        },
+        ...(v.article.summaryMediaType && v.article.summaryMediaUrl && {
+          media: {
+            mediaType: v.article.summaryMediaType as 'image' | 'video',
+            url: v.article.summaryMediaUrl
+          }
+        })
+      }))
+    }
   }
 }

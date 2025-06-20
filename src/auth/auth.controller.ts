@@ -5,6 +5,7 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { AuthService } from './auth.service';
 import { EmailVerifyDto } from './dto/EmailVerifyDto';
 import { EmailVerifyRequestDto } from './dto/EmailVerifyRequestDto';
+import {RefreshResponseDto} from './dto/RefreshResponseDto'
 import {SignInDto} from './dto/SignInDto'
 import {SignUpDto} from './dto/SignUpDto'
 import {RefreshGuard} from './guard/refresh.guard'
@@ -78,6 +79,7 @@ export class AuthController {
   }
 
   @UseGuards(RefreshGuard)
+  @ApiResponse({status: 200, description: '리프레시 성공', type: RefreshResponseDto})
   @Get('/refresh')
   async refresh(
     @Req() req: expReq,
