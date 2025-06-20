@@ -45,41 +45,4 @@ export class CompanyController {
   async getCompanyCategories(@Param('name') name: string): Promise<string[]> {
     return await this.companyService.getCompanyCategories(name);
   }
-
-  @ApiOperation({ summary: '언론사별 기사 조회' })
-  @ApiParam({
-    name: 'name',
-    type: String,
-    description: '언론사 이름',
-    example: '조선일보'
-  })
-  @ApiResponse({
-    status: 200,
-    description: '기사 조회 성공',
-    example: {
-      headlines: [
-        {
-          uuid: '7a1e4567-e89b-12d3-a456-426614174000',
-          title: '속보: 대형 태풍 상륙',
-          isHeadline: true
-        },
-        {
-          uuid: '8b2e4567-e89b-12d3-a456-426614174001',
-          title: '단독: 유명 인사 인터뷰',
-          isHeadline: true
-        }
-      ],
-      normalArticles: [
-        {
-          uuid: '9c3e4567-e89b-12d3-a456-426614174002',
-          title: '정책 분석: 부동산 개편',
-          isHeadline: false
-        }
-      ]
-    }
-  })
-  @Get(':name/articles')
-  async getCompanyArticles(@Param('name') name: string) {
-    return await this.companyService.getCompanyArticles(name);
-  }
 }

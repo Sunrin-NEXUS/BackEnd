@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common'
 import {ApiOperation, ApiResponse, ApiTags, ApiParam} from '@nestjs/swagger'
 import {ArticleService} from './article.service'
+import {ArticleAllPressResponseDto} from './dto/ArticleAllPressResponseDto'
 import {CreateArticleDto} from './dto/CreateArticleDto'
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { ArticleSummaryResponseDto, PaginatedArticleResponseSummaryDto } from './dto/ArticleSummaryResponseDto';
@@ -114,5 +115,16 @@ export class ArticleController {
     @Query() pagination: PaginationDto,
   ): Promise<PaginatedArticleResponseSummaryDto> {
     return await this.articleService.getArticles(articlesQuery, pagination)
+  }
+
+  @ApiOperation({ summary: '전체 언론사에 대한 기사 조회' })
+  @ApiResponse({
+    status: 200,
+    description: '조회 성공',
+    type: ArticleAllPressResponseDto
+  })
+  @Get('press/all')
+  async getArticleByAllCompany() {
+    return await this.articleService.getArticleByAllCompany();
   }
 }

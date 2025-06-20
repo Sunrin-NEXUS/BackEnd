@@ -2,7 +2,8 @@ import {Injectable, BadRequestException, InternalServerErrorException} from '@ne
 import {PrismaService} from '../prisma/prisma.service'
 import {instanceToPlain} from 'class-transformer'
 import { PaginationDto } from '../common/dto/pagination.dto'
-import { ArticleSummaryResponseDto, PaginatedArticleResponseSummaryDto } from './dto/ArticleSummaryResponseDto'
+import {ArticleAllPressResponseDto, ArticlePressResponseDto} from './dto/ArticleAllPressResponseDto'
+import { PaginatedArticleResponseSummaryDto } from './dto/ArticleSummaryResponseDto'
 import {ArticleResponseDto} from './dto/ArticleResponseDto'
 import {
   Subject,
@@ -90,6 +91,7 @@ export class ArticleService {
             createAt: article.createAt,
             isHeadline: true,
             company: {
+              uuid: article.uuid,
               profileImageUrl: article.company.profileImageUrl,
               name: article.company.name,
             },
@@ -146,6 +148,7 @@ export class ArticleService {
       createAt: article.createAt,
       originalUrl: article.originalUrl,
       company: {
+        uuid: article.company.uuid,
         profileImageUrl: article.company.profileImageUrl,
         name: article.company.name,
       }
@@ -221,5 +224,50 @@ export class ArticleService {
         })
       })),
     };
+  }
+
+  async getArticleByAllCompany(): Promise<ArticleAllPressResponseDto> {
+    const companies = await this.prismaService.company.findMany()
+
+    const items = await Promise.all(
+      companies.map(async (company): Promise<ArticlePressResponseDto> => {
+        const [headlines, normals] = await Promise.all([
+          this.prismaService.article.findMany({
+            where: {
+              companyId: company.uuid,
+              isHeadline: true
+            },
+            take: 5,
+            orderBy: {createAt: 'desc'},
+            include: {company: true}
+          }),
+          this.prismaService.article.findMany({
+            where: {
+              companyId: company.uuid,
+              isHeadline: false
+            },
+            take: 3,
+            orderBy: {createAt: 'desc'},
+            include: {company: true}
+          }),
+        ])
+        return {
+          company: {
+            uuid: company.uuid,
+            name: company.name,
+            profileImageUrl: company.profileImageUrl,
+          },
+          headlines: headlines.map(v =>
+            ArticleToArticleSummaryResponseDto(v),
+          ),
+          normals: normals.map(v =>
+            ArticleToArticleSummaryResponseDto(v),
+          )
+        }
+      })
+    )
+    return {
+      items,
+    }
   }
 }

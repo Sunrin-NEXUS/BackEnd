@@ -1,10 +1,11 @@
 import { Article, Company } from '@prisma/client';
+import {ArticleSummaryResponseDto} from '../dto/ArticleSummaryResponseDto'
 
 interface ArticleWithCompany extends Article {
   company: Company
 }
 
-export function ArticleToArticleSummaryResponseDto(v: ArticleWithCompany) {
+export function ArticleToArticleSummaryResponseDto(v: ArticleWithCompany): ArticleSummaryResponseDto {
   return {
     uuid: v.uuid,
     title: v.title,
@@ -19,6 +20,7 @@ export function ArticleToArticleSummaryResponseDto(v: ArticleWithCompany) {
     }),
     isHeadline: v.isHeadline,
     company: {
+      uuid: v.company.uuid,
       profileImageUrl: v.company.profileImageUrl,
       name: v.company.name,
     }
