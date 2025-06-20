@@ -3,6 +3,7 @@ import {Company} from '@prisma/client'
 import {PrismaService} from '../prisma/prisma.service'
 import {CompanySubscriberCountResponseDto} from './dto/CompanySubscriberCountResponseDto'
 import {CreateCompanyDto} from './dto/CreateCompanyDto'
+import { ArticleToArticleSummaryResponseDto } from '../article/util/ArticleToArticleSummaryResponseDto'
 
 @Injectable()
 export class CompanyService {
@@ -50,5 +51,65 @@ export class CompanyService {
     }
 
     return { subscriberCount: company._count.subscribers };
+  }
+
+  async getCompanyCategories(name: string): Promise<string[]> {
+    const company = await this.prismaService.company.findUnique({
+      where: {name},
+      include: {
+        articles: {
+          where: {
+            category: {not: null}
+          },
+          select:{
+            category: true
+          }
+        }
+      }
+    })
+    if (!company)
+      throw new BadRequestException({message: 'Company Not Found'})
+
+    const categoryset = new Set<string>()
+    for (const article of company.articles) {
+      if (article.category)
+        categoryset.add(article.category)
+    }
+    return [...categoryset]
+  }
+
+  async getCompanyArticles(name: string) {
+    const company = await this.prismaService.company.findUnique({
+      where: {name}
+    })
+
+    if (!company)
+      throw new BadRequestException({message: 'Company Not Found'})
+
+    const [headlines, normalArticles] = await Promise.all([
+      this.prismaService.article.findMany({
+        where: {
+          companyId: company.uuid,
+          isHeadline: true
+        },
+        take: 2,
+        orderBy: {createAt: 'desc'},
+        include: {company: true}
+      }),
+      this.prismaService.article.findMany({
+        where: {
+          companyId: company.uuid,
+          isHeadline: false
+        },
+        take: 2,
+        orderBy: {createAt: 'desc'},
+        include: {company: true}
+      }),
+    ])
+
+    return {
+      headlines: headlines.map((a) => a.summaryContents),
+      normalArticles: normalArticles.map((a) => a.summaryContents),
+    };
   }
 }
