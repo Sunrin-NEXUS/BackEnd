@@ -63,9 +63,9 @@ model Notification {
 
 model RawArticle {
   id                   String   @id @default(uuid()) @db.Char(36)
-  title                String
-  contents             String
-  original_article_url String   @map("original_article_url")
+  title                String   @db.Text // 긴 제목일 경우 Text 권장
+  contents             String   @db.Text // 여기는 반드시 Text 타입으로 변경
+  original_article_url String   @db.Text // URL 길이가 긴 경우 Text 권장
   summary_img_url      String?  @map("summary_img_url") @db.Text
   img_url              String?  @map("img_url") @db.Text
   img_desc             String?  @map("img_desc") @db.Text

@@ -100,6 +100,23 @@ export class List extends BaseContent {
 }
 
 /**
+* Footnote
+*/
+export class Footnote extends BaseContent {
+  @ApiProperty({ enum: ['footnote'] })
+  type: 'footnote' = 'footnote'
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  id?: string
+
+  @ApiProperty()
+  @IsString()
+  content: string
+}
+
+/**
  * LinkContent
  */
 export class Link extends BaseContent {
@@ -178,13 +195,14 @@ function resolveContentType(type: string) {
     case 'link': return Link
     case 'scroll': return Scroll
     case 'media': return MediaContent
+    case 'footnote': return Footnote
     case '':
       throw new BadRequestException({
-        message: 'Invalid content type. The "type" field must not be empty and must be one of: subject, description, list, link, scroll, media.'
+        message: 'Invalid content type. The "type" field must not be empty and must be one of: subject, description, footnote, list, link, scroll, media.'
       })
     default:
       throw new BadRequestException({
-        message: 'Invalid content type. The "type" field must be one of: subject, description, list, link, scroll, media.'
+        message: 'Invalid content type. The "type" field must be one of: subject, description, footnote, list, link, scroll, media.'
       })
   }
 }
@@ -193,6 +211,7 @@ function resolveContentType(type: string) {
 @ApiExtraModels(
   Subject,
   Description,
+  Footnote,
   List,
   Link,
   Scroll,
@@ -211,6 +230,7 @@ export class CreateArticleDto {
     oneOf: [
       { $ref: getSchemaPath(Subject) },
       { $ref: getSchemaPath(Description) },
+      { $ref: getSchemaPath(Footnote) },
       { $ref: getSchemaPath(List) },
       { $ref: getSchemaPath(Link) },
       { $ref: getSchemaPath(Scroll) },
@@ -221,6 +241,7 @@ export class CreateArticleDto {
       mapping: {
         subject: getSchemaPath(Subject),
         description: getSchemaPath(Description),
+        footnote: getSchemaPath(Footnote),
         list: getSchemaPath(List),
         link: getSchemaPath(Link),
         scroll: getSchemaPath(Scroll),
@@ -241,6 +262,7 @@ export class CreateArticleDto {
   contents: Array<
     | Subject
     | Description
+    | Footnote
     | List
     | Link
     | Scroll
