@@ -28,6 +28,7 @@ model Company {
   name            String    @unique
   description     String
   profileImageUrl String
+  signatureColor  String
   articles        Article[]
   subscribers     User[]    @relation("UserSubscriptions")
 }

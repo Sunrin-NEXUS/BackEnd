@@ -15,12 +15,17 @@ export class CompanyService {
     name,
     description,
     profileImageUrl,
+    signatureColor
   }: CreateCompanyDto) {
+    const isCompany = await this.prismaService.company.findUnique({where: {name}})
+    if (isCompany)
+      throw new BadRequestException({message: 'Company Name already exists'})
     return await this.prismaService.company.create({
       data: {
         name,
         description,
         profileImageUrl,
+        signatureColor
       }
     })
   }

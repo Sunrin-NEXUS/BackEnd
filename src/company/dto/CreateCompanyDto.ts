@@ -13,4 +13,8 @@ export class CreateCompanyDto {
   @ApiProperty({default: 'https://example.com'})
   @IsUrl()
   profileImageUrl: string
+
+  @ApiProperty()
+  @IsString()
+  signatureColor: string
 }
