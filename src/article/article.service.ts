@@ -45,28 +45,32 @@ export class ArticleService {
 
     const plainContents = instanceToPlain(contents)
 
-    const res = await this.prismaService.article.create({
-      data: {
-        category,
-        title,
-        contents: plainContents,
-        summaryTitle: summary.title,
-        summaryContents: summary.contents,
-        summaryMediaType: summary.media.mediaType,
-        summaryMediaUrl: summary.media.url,
-        createAt: createdAt,
-        isHeadline,
-        companyId,
-        originalUrl,
-      }
-    })
+    try {
+      const res = await this.prismaService.article.create({
+        data: {
+          category,
+          title,
+          contents: plainContents,
+          summaryTitle: summary.title,
+          summaryContents: summary.contents,
+          summaryMediaType: summary.media.mediaType,
+          summaryMediaUrl: summary.media.url,
+          createAt: typeof createdAt === 'string' ? new Date(createdAt) : createdAt,
+          isHeadline,
+          companyId,
+          originalUrl,
+        }
+      })
 
-    this.notificationService.notifyUsersOfNewArticle({
-      articleUuid: res.uuid,
-      companyUuid: companyId,
-    })
+      this.notificationService.notifyUsersOfNewArticle({
+        articleUuid: res.uuid,
+        companyUuid: companyId,
+      })
 
-    return res
+      return res
+    } catch(e) {
+      console.error(e)
+    }
   }
 
   async getArticleAllCategory() {
