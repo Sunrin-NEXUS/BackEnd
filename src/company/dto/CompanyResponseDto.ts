@@ -7,4 +7,7 @@ export class CompanyResponseDto extends CompanySummaryResponseDto {
 
   @ApiProperty()
   subscribers: number
+
+  @ApiProperty()
+  signatureColor: string
 }

@@ -39,6 +39,7 @@ export class CompanyService {
       profileImageUrl: company.profileImageUrl,
       description: company.description,
       subscribers: subscriberCnt.subscriberCount,
+      signatureColor: company.signatureColor,
     }
   }
 
